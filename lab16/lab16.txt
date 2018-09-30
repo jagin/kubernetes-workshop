@@ -1,0 +1,53 @@
+Application configuration
+Lab 16: Secret
+==============
+
+// Secrets: https://kubernetes.io/docs/concepts/configuration/secret/
+
+// Inspecting default-token Secret
+$ kubectl get secrets
+$ kubectl describe secrets
+$ kubectl describe pod kubek
+$ kubectl exec kubek ls /var/run/secrets/kubernetes.io/serviceaccount/
+
+// Creating a Secret
+$ kubectl create secret -h
+// $ kubectl create secret generic kubek-secret --from-literal=user=myuser --from-literal=password=mypasswd
+$ cat kubek-secret.yaml
+$ kubectl create -f kubek-secret.yaml
+$ kubectl get secret kubek-secret -o yaml
+
+$ kubectl create -f kubek-pod-secret.yaml
+$ kubectl port-forward kubek 8080:8000
+$ curl http://localhost:8080/secret
+$ curl http://user:passwd@localhost:8080/secret
+
+// Creating a secret for authentication with a Docker Registry
+$ kubectl create secret docker-registry mydockerhubsecret \
+  --docker-username=myusername --docker-password=mypassword \ 
+  --docker-email=my.email@provider.com
+
+// Example:
+//
+// apiVersion: v1
+// kind: Pod
+// metadata:
+//   name: private-pod
+// spec:
+//   imagePullSecrets:                 
+//   - name: mydockerhubsecret         
+//   containers:
+//   - image: username/private:tag
+//     name: main
+
+// Creating a secret for authentication with a AWS ECR Registry:
+// $ export AWS_ACCOUNT_ID=your-account-id
+// $ export AWS_REGION=eu-west-1
+// $ export DOCKER_REGISTRY_SERVER=https://$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+// $ export DOCKER_USER=AWS
+// $ export DOCKER_PASSWORD=`aws ecr get-login --region $AWS_REGION --registry-ids $AWS_ACCOUNT_ID | cut -d' ' -f6`
+// $ kubectl create secret docker-registry docker-credentials \
+//     --docker-server=$DOCKER_REGISTRY_SERVER \
+//     --docker-username=$DOCKER_USER \
+//     --docker-password=$DOCKER_PASSWORD \
+//     --docker-email=no@email.local

@@ -1,0 +1,14 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: kubek
+spec:
+  template:
+    metadata:
+      name: kubek
+      labels:
+        app: kubek
+    spec:
+      containers:
+      - image: jagin/kubek:v2
+        name: kubek

@@ -1,0 +1,28 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: kubek
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: kubek
+      labels:
+        app: kubek
+    spec:
+      containers:
+      - image: jagin/kubek:v1
+        name: kubek
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubek
+spec:
+  type: NodePort 
+  ports:
+  - port: 8080
+    targetPort: 8000
+  selector:
+    app: kubek
+

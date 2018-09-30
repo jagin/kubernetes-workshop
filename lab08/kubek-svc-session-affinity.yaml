@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubek
+spec:
+  sessionAffinity: ClientIP
+  ports:
+  - port: 8080
+    targetPort: 8000
+  selector:
+    app: kubek

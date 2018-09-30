@@ -1,0 +1,35 @@
+Pods
+Lab 3: Namespace
+================
+
+// Namespaces: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+
+// Discovering other namespaces and their pods
+$ kubectl get ns
+$ kubectl get po --namespace kube-system
+
+// Creating a namespace with the imperative command
+// $ kubectl create namespace kubek-ns
+
+// Creating a namespace with the descriptor
+$ cat kubek-ns.yaml
+$ kubectl create -f kubek-ns.yaml
+
+// Managing objects in other namespaces
+$ kubectl create -f ../lab01/kubek-pod.yaml -n kubek-ns
+$ kubectl get pods --namespace kubek-ns
+
+// Running pods in the selected namespace
+$ cat kubek-pod-namespaced.yaml
+$ kubectl create -f kubek-pod-namespaced.yaml
+$ kubectl get pods -n kubek-ns
+
+// Switching the namespace
+$ kubectl config set-context $(kubectl config current-context) --namespace ${my-namespace}
+
+// To quickly switch to a different namespace, you can set up the following alias:
+$ alias kcd='kubectl config set-context $(kubectl config current-context) --namespace '
+// Then switch between namespaces using:
+$ kcd ${my-namespace}
+
+// See also: https://github.com/ahmetb/kubectx

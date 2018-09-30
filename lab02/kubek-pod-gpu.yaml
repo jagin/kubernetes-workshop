@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubek-gpu
+spec:
+  nodeSelector:
+    gpu: "true"
+  containers:
+  - image: jagin/kubek
+    name: kubek
+    ports:
+    - containerPort: 8000

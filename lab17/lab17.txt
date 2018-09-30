@@ -1,0 +1,136 @@
+Updating application
+Lab 17: Deploymet
+=================
+
+// Deployments: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+// Prepare different kubek versions
+// docker build -t {docker-repo}/kubek:v1 . && docker push {docker-repo}/kubek:v1
+
+// First remove all kubek pods, ReplicationControllers and Services
+$ kubectl delete all --all
+
+// Creating a Deployment
+$ cat kubek-deployment-svc-v1.yaml
+$ kubectl create -f kubek-deployment-svc-v1.yaml --record
+// - --record option will record the command in the revision history, which will be useful later
+$ kubectl get deployment
+$ kubectl describe deployment
+
+// Check the status of the deployment rollout
+$ kubectl rollout status deployment kubek
+
+// Check the resources
+$ kubectl get po
+$ kubectl get rs
+// - The RC name also contains the hash value of its pod template
+// - Deployment creates multiple ReplicaSets - one for each version of the pod template
+$ kubectl get svc kubek -o wide
+
+// Updating a Deployment
+// - The only thing you need to do is modify the pod template defined in the Deployment resource
+// - Kubernetes will take all the steps necessary to get the actual system state to what’s defined in the resource
+// - There are two strategies: RollingUpdate (default) and Recreate
+// - Recreate is used when your application doesn’t support running multiple versions in parallel and 
+//   requires the old version to be stopped completely before the new one is started
+// - update is triggered when we change pod template
+
+// Slowing down the rolling update for the lab purpose
+$ kubectl patch deployment kubek -p '{"spec": {"minReadySeconds": 10}}'
+// - we use patch to modify a single property or limited number of them without editing the definition
+// - minReadySeconds is not for slowing down deloyment
+
+$ while true; do curl http://localhost:${kubek-svc-node-port}; done
+
+$ kubectl set image deployment kubek kubek={docker-repo}/kubek:v2
+// - checkout the curl loop
+
+$ kubectl rollout status deployment kubek
+
+// Other kubectl commands to update the deployment
+// - kubectl edit
+// $ kubectl edit deployment kubek
+// - kubectl patch
+// $ kubectl patch deployment kubek -p '{"spec":{"template": {"spec": {"containers": [{"name": "kubek", "image": "jagin/kubek:v2"}]}}}}'
+// - kubectl apply
+// $ kubectl apply -f kubek-deployment-v2.yaml
+// - kubectl replace
+// $ kubectl replace -f kubek-deployment-v2.yaml
+// - kubectl set image
+// $  kubectl set image deployment kubek kubek={docker-repo}/kubek:v2
+
+$ kubectl get rs
+// - can still see the old ReplicaSet next to the new one
+// - RC are managed by Deployment (we should not mess arround with it)
+
+// Undoing a rollout
+$ kubectl set image deployment kubek kubek={docker-repo}/kubek:v3
+$ kubectl rollout status deployment kubek
+
+// Roll the Deployment back to the previous revision
+$ kubectl rollout undo deployment kubek
+// - the undo command can also be used while the rollout process is still in
+//   progress to essentially abort the rollout
+
+$ kubectl get rs
+
+// Displaying a deployment's rollout history
+$ kubectl rollout history deployment kubek
+// - without --record CHANGE-CAUSE column in the revision history would be empty
+
+// Rolling back to the specified deployment revision
+$ kubectl rollout undo deployment kubek --to-revision=1
+// - RC represent the complete revision history in the Deployment,
+// - the revision history is limited by the revisionHistoryLimit property on the Deployment resource
+
+// Controlling the rate of the rollout
+// - by default a new pod is created and when it became available, one of the old pods was deleted and another new pod was created
+// - this continued until there were no old pods left
+// - this can be configured by maxSurge and maxUnavailable
+// - https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-unavailable
+// - https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge
+// Example:
+//
+// spec:
+//   strategy:
+//     rollingUpdate:
+//       maxSurge: 1
+//       maxUnavailable: 0
+//     type: RollingUpdate
+// - maxSurge: determines how many pod instances you allow to exist above the desired replica 
+//   count configured on the Deployment
+// - maxUnavailable: determines how many pod instances can be unavailable relative to the desired 
+//   replica count during the update
+
+// Pausing the rollout process
+// Run the following two commands one by one immediately (within a few seconds)
+$ kubectl set image deployment kubek kubek={docker-repo}/kubek:v4
+$ kubectl rollout pause deployment kubek
+// - a single new pod should have been created, but all original pods should also still be running
+// - we can verify whether the new version is working fine on smaller number of users (close to canary release)
+// - the undo command won’t undo it until you resume the Deployment
+
+// Resuming the rollout
+$ kubectl rollout resume deployment kubek
+
+// Blocking rollouts of bad versions
+// - minReadySeconds is to prevent deploying malfunctioning versions
+// - minReadySeconds property specifies how long a newly created pod should be
+//   ready before the pod is treated as available
+// - if a new pod isn’t functioning properly and its readiness probe starts failing
+//   before minReadySeconds have passed, the rollout of the new version will effectively be blocked
+
+$ kubectl apply -f kubek-deployment-v3-readinesscheck.yaml 
+
+$ kubectl rollout status deployment kubia
+
+$ kubectl get po
+
+// Configuring a deadline for the rollouts
+$ kubectl describe deploy kubek
+// - see Conditions
+// - by default the Deployment is set to failed after 10 minutes (we can change it through progressDeadlineSeconds property)
+
+// Aborting a bad rollout
+$ kubectl rollout undo deployment kubek
+// - in future versions, the rollout will be aborted automatically when the time specified in progressDeadlineSeconds is exceeded

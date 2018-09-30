@@ -1,0 +1,161 @@
+Self-Contained Systems
+Lab 19: Build and running
+=========================
+
+// Clone the SCS repository
+// https://github.com/jagin/scs
+// https://github.com/jagin/home-scs
+// https://github.com/jagin/account-scs
+// https://github.com/jagin/items-scs
+
+$ git clone --recurse-submodules https://github.com/jagin/scs.git
+
+// Problems with some git versions?
+// See: https://stackoverflow.com/questions/3796927/how-to-git-clone-including-submodules
+
+$ cd scs
+
+// Home SCS setup
+$ cd home-scs
+$ npm install
+$ cp .env.template .env
+$ vi .env
+// Set:
+//   JWT_KEY=UvKVk0ibulu9_8-8R1D3GFhRVkYnFHznD4PMTpemOxhmxa8GZbSir9mbySiSjyev
+// and save
+
+// Run Home SCS from docker-compose (development mode)
+$ docker-compose up
+$ docker-compose up --build 
+// http://localhost:8000
+
+// Stopping and removing Home SCS
+$ docker-compose down
+
+// Building the container image (optional - docker-compose have already done it)
+$ docker build -t home-scs .
+
+// Running the container image
+$ docker run --name home-scs -p 8000:8000 \
+-e "JWT_KEY=UvKVk0ibulu9_8-8R1D3GFhRVkYnFHznD4PMTpemOxhmxa8GZbSir9mbySiSjyev" -d home-scs
+// Look at the logs if there are any errors
+$ docker logs home-scs
+// http://localhost:8080/home/pl
+
+// Listing all running containers
+$ docker ps
+
+// Getting additional information about the container
+$ docker inspect home-scs
+
+// Exploring the inside of a running container
+$ docker exec -it home-scs bash
+# ps aux
+# ls
+# exit
+
+// Stopping and removing a container
+$ docker stop home-scs
+$ docker ps
+$ docker ps -a
+$ docker rm home-scs
+
+// Pushing the image to an image registry
+$ docker tag home-scs {docker-repo}/home-scs
+$ docker images | head
+$ docker push {docker-repo}/home-scs
+
+$ cd ..
+
+// Items SCS setup
+$ cd items-scs
+$ npm install
+$ cp .env.template .env
+$ vi .env
+// Set
+//   JWT_KEY=UvKVk0ibulu9_8-8R1D3GFhRVkYnFHznD4PMTpemOxhmxa8GZbSir9mbySiSjyev
+// and save
+
+// Run Items SCS from docker-compose (development mode)
+$ docker-compose up
+// http://localhost:8000
+
+// Stopping and removing Items SCS
+$ docker-compose down
+
+// Pushing the image to an image registry
+$ docker tag items-scs {docker-repo}/items-scs
+$ docker push {docker-repo}/items-scs
+
+$ cd ..
+
+// Account SCS setup
+$ cd account-scs
+$ npm install
+$ cp .env.template .env
+$ vi .env
+// Set:
+//   JWT_KEY=UvKVk0ibulu9_8-8R1D3GFhRVkYnFHznD4PMTpemOxhmxa8GZbSir9mbySiSjyev
+//   AUTH0_CLIENT_ID=Rl1UDl5VgYwTOGZqAQRGZN4lIZEA0726
+//   AUTH0_CLIENT_SECRET=UvKVk0ibulu9_8-8R1D3GFhRVkYnFHznD4PMTpemOxhmxa8GZbSir9mbySiSjyev
+//   AUTH0_DOMAIN=jagin.eu.auth0.com
+// and save
+
+// Run Account SCS from docker-compose (development mode)
+$ docker-compose up
+// http://localhost:8000
+
+// Stopping and removing Account SCS
+$ docker-compose down
+
+// Pushing the image to an image registry
+$ docker tag account-scs {docker-repo}/account-scs
+$ docker push {docker-repo}/account-scs
+
+$ cd ..
+
+// SCS .env setup
+$ cp .env.template .env
+
+// Build locally SCS images for modules (optional - we've already built the images)
+$ ./build-scs
+
+// Run SCS Application (all modules)
+$ docker-compose up -d
+
+// Watch logs
+$ docker-compose logs -f
+$ docker-compose logs -f --tail=10
+$ docker-compose logs -f home-scs
+
+// http://localhost:8000
+
+// Listing all running containers
+$ docker ps
+
+// Stop Items SCS
+$ docker stop items-scs
+
+// http://localhost:8000/home/pl
+// Items SCS not available
+
+// Start Items SCS again
+$ docker start items-scs
+
+// Stopping and removing all SCS modules containers
+$ docker-compose down
+
+$ docker images | head
+
+// Pushing the image to an image registry
+$ docker tag scs {docker-repo}/scs
+$ docker push {docker-repo}/scs
+
+// Kubernetes deployment
+$ kubectl create ns scs
+$ kubectl -n scs apply -f auth0-secret.yaml
+$ kubectl -n scs apply -f home-scs.yaml
+$ kubectl -n scs apply -f account-scs.yaml
+$ kubectl -n scs apply -f mongodb.yaml
+$ kubectl -n scs apply -f items-scs.yaml
+$ kubectl -n scs apply -f scs.yaml

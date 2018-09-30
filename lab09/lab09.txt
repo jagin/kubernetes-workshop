@@ -1,0 +1,26 @@
+Service
+Lab 9: Creating NodePort Service
+================================
+
+// Type NodePort: https://kubernetes.io/docs/concepts/services-networking/service/#nodeport
+// Type LoadBalancer: https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
+
+// Creating NodePort service
+$ cat kubek-svc.yaml
+$ kubectl create -f kubek-svc.yaml
+// $ kubectl expose rc kubek --port=8080 --target-port=8000 --type=NodePort --name=kubek
+$ kubectl get svc kubek
+
+// The service is accessible through node IP (in our case it is localhost)
+$ curl http://localhost:${kubek-svc-node-port}
+
+// The service is accessible through the proxy
+$ curl http://localhost:8001/api/v1/namespaces/default/services/http:kubek:/proxy/
+
+// The service is also accessiple through the Cluster IP
+$ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --command -- curl -s http://{cluster-ip}:8080
+
+  
+* Jeżeli znamy adres IP noda możemy się dostać do serwisu ale jeżeli node nie bedzie działał to musimy użyc
+  adresu IP innego noda. Jest to problematyczne i rezykowne ze względu na bezpieczeństwo. Rozwiązanie LoadBalancer.
+

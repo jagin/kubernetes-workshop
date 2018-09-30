@@ -1,0 +1,40 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: home-scs
+  labels:
+    app: home-scs    
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: home-scs
+      labels:
+        app: home-scs
+    spec:
+      containers:
+      - image: jagin/home-scs
+        env:
+        - name: NODE_ENV        
+          value: development         
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: auth0-secret
+              key: auth0-client-secret
+        name: home-scs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-scs
+  labels:
+    app: home-scs  
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8000
+  selector:
+    app: home-scs
+

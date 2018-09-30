@@ -1,0 +1,125 @@
+Pods
+Lab 1: Running containers
+=========================
+
+// Pods: https://kubernetes.io/docs/concepts/workloads/pods/pod/
+
+// Overview of kubectl: https://kubernetes.io/docs/reference/kubectl/overview/
+// kubectl Usage Conventions: https://kubernetes.io/docs/reference/kubectl/conventions/
+// kubectl [command] [TYPE] [NAME] [flags]
+$ kubectl help
+
+// If you have kubectl already installed and pointing to some other environment,
+// be sure to change context so that kubectl is pointing to docker-for-desktop:
+$ kubectl config get-contexts
+$ kubectl config use-context docker-for-desktop
+
+// Verify that Kubernetes on Docker is properly configured
+// Settings -> Kubernetes
+//   Enable Kubernetes: true
+$ kubectl cluster-info
+$ kubectl get nodes
+
+// Dashboard (local)
+// https://github.com/kubernetes/dashboard
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+$ kubectl proxy
+// http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+// Click 'Skip' at login prompt
+
+// Building Kubek application
+cd kubek
+// Building the container image
+$ docker build -t kubek .
+
+// Running the container image
+$ docker run --name kubek -p 8080:8000 -d kubek
+// Look at the logs if there are any errors
+$ docker logs kubek
+$ curl http://localhost:8080
+
+// Listing all running containers
+$ docker ps
+
+// Getting additional information about the container
+$ docker inspect kubek
+
+// Exploring the inside of a running container
+$ docker exec -it kubek bash
+# ps aux
+# ls
+# exit
+
+// Attaching to the current process
+$ docker attach kubek
+// - to exit the terminal Ctrl+p + Ctrl+q
+// On MacOs it is not working then
+$ docker attach --sig-proxy=false kubek
+// - and Ctrl+c will exit the terminal
+
+// Stopping and removing the container
+$ docker stop kubek
+$ docker ps
+$ docker ps -a
+$ docker rm kubek
+
+// Pushing the image to an image registry
+$ docker tag kubek {docker-repo}/kubek
+$ docker images | head
+$ docker push {docker-repo}/kubek
+
+cd ..
+
+// Running kubek pod
+$ kubectl run kubek --image={docker-repo}/kubek --port=8000 --generator=run-pod/v1
+// --generator=run-pod/v1 uruchamia samego poda
+
+// List runnig pods
+// - from the default namespace
+$ kubectl get pods
+// - from all namepsaces
+$ kubectl get pods --all-namespaces
+
+// List runnig pods with a given name
+$ kubectl get po kubek
+$ kubectl get po kubek -o wide
+$ kubectl describe pod kubek
+$ kubectl get po kubek -o yaml
+// - metadata
+// - spec
+// - status
+
+// Retrieving pod logs
+$ kubectl logs kubek
+// - container logs are automatically rotated daily and every time the log file reaches 10MB in size
+// - the kubectl logs command only shows the log entries from the last rotation
+// - when a pod is deleted, its logs are also deleted
+// - to make a pod’s logs available even after the pod is deleted, you need to set up centralized,
+//   cluster-wide logging, which stores all the logs into a central store
+
+// Gettings logs of a multi-container pod you must specify the container name
+$ kubectl logs kubek -c kubek
+
+// Sending requests to the pod
+// Forwarding a local network port to a port in the pod
+$ kubectl port-forward kubek 8080:8000
+$ curl http://localhost:8080
+
+// Access pod through proxy
+$ curl -L http://localhost:8001/api/v1/namespaces/default/pods/http:kubek:/proxy
+// -L - flag instructs curl to follow any redirect so that you reach the eventual endpoint. 
+
+// Remove the pod. We will recreate it from the descriptor
+$ kubectl delete po kubek
+
+// Running the pod descriptor
+$ cat kubek-pod.yaml
+$ kubectl create -f kubek-pod.yaml
+// $ kubectl apply -f kubek-pod.yaml
+// Kubernetes Object Management: https://kubernetes.io/docs/concepts/overview/object-management-kubectl/overview/
+
+$ kubectl logs kubek
+
+// Using kubectl explain to discover possible API object fields
+$ kubectl explain pods
+$ kubectl explain pod.spec

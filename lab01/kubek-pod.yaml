@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubek
+spec:
+  containers:
+  - image: jagin/kubek
+    name: kubek
+    ports:
+    - containerPort: 8000

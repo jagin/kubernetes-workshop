@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-kubek
+spec:
+  containers:
+  - image: jagin/fortune
+    args: ["-n", "50", "-o"]
+    name: fortune
+    volumeMounts:
+    - name: public
+      mountPath: /var/fortune
+  - image: jagin/kubek
+    name: kubek
+    volumeMounts:
+    - name: public
+      mountPath: /app/public
+      readOnly: true
+    ports:
+    - containerPort: 8000
+  volumes:
+  - name: public
+    emptyDir: {}
+

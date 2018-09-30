@@ -1,0 +1,37 @@
+Volume
+Lab 12: hostPath
+================
+
+// hostPath: https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+
+// Creating MongoDB with hostPath
+$ cat mongodb-pod-hostpath.yaml
+$ kubectl create -f mongodb-pod-hostpath.yaml
+$ kubectl exec -it mongodb mongo
+> use mystore
+> db.foo.insert({name:'foo'})
+> db.foo.find()
+> exit
+$ kubectl delete pod mongodb
+// - data should be preserved
+$ kubectl create -f mongodb-pod-hostpath.yaml
+$ kubectl exec -it mongodb mongo
+> use mystore
+> db.foo.find()
+> exit
+
+------------------------------------------------------
+
+// Persistent storage
+
+// awsElasticBlockStore: https://kubernetes.io/docs/concepts/storage/volumes/#awselasticblockstore
+// - creating MongoDB with AWS EBS
+$ cat mongodb-pod-aws.yaml
+
+// gcePersistentDisk: https://kubernetes.io/docs/concepts/storage/volumes/#gcepersistentdisk
+// - creating MongoDB on Google Cloud with GCE Persistence Disk
+$ cat mongodb-pod-gcepd.yaml
+
+// nfs: https://kubernetes.io/docs/concepts/storage/volumes/#nfs
+// - creating MongoDB with NFS
+$ cat mongodb-pod-nfs.yaml

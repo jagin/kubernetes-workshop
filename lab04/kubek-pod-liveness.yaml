@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubek-liveness
+spec:
+  containers:
+  - image: jagin/kubek
+    name: kubek
+    livenessProbe:
+      httpGet:
+        path: /health-check
+        port: 8000
+      initialDelaySeconds: 15
+

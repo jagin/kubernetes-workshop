@@ -1,0 +1,62 @@
+PersistenceVolume, PersistenceVolumeClaim
+Lab 13: PV, PVC in use
+======================
+
+// Persistent Volumes: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+
+// Creating a PersistentVolume
+$ cat mongodb-pv-hostpath.yaml
+$ cat mongodb-pv-aws.yaml
+$ cat mongodb-pv-gcepd.yaml
+$ kubectl create -f mongodb-pv-hostpath.yaml
+$ kubectl get pv
+// - available, because you haven’t yet claim it.
+// - PV don’t belong to any namespace
+
+// Claiming a PersistentVolume by creating a PersistentVolumeClaim
+$ cat mongodb-pvc.yaml
+$ kubectl create -f mongodb-pvc.yaml
+// - the PV capacity must be large enough to accommodate what the claim requests
+// - Kubernetes finds the matching PV and bound it with PVC
+$ kubectl get pvc
+
+// Access modes
+// - RWO—ReadWriteOnce: only a single node can mount the volume for reading and writing.
+// - ROX—ReadOnlyMany: multiple nodes can mount the volume for reading.
+// - RWX—ReadWriteMany: multiple nodes can mount the volume for both reading and writing.
+
+$ kubectl get pv
+// - PV is now Bound instead of Available
+// - nobody else can claim the same volume until you release it
+
+// Using a PersistentVolumeClaim in a pod
+$ cat mongodb-pod-pvc.yaml
+$ kubectl create -f mongodb-pod-pvc.yaml
+$ kubectl exec -it mongodb mongo
+> use mystore
+> db.foo.find()
+> exit
+// - we have used the same hostPath (from previous lab) as a PV
+
+// Recycling PersistentVolumes
+$ kubectl delete pod mongodb
+$ kubectl delete pvc mongodb-pvc
+$ kubectl create -f mongodb-pvc.yaml
+$ kubectl get pvc
+// - the claim’s status is shown as Pending
+$ kubectl get pv
+// - The STATUS column shows the PV as Released, not Available like before. 
+// - the volume may contain data and shouldn’t be bound to a completely new claim without 
+//   giving the cluster admin a chance to clean it up
+// - why? because spec.persistentVolumeReclaimPolicy Retein
+$ kubectl explain pv.spec.persistentVolumeReclaimPolicy
+
+// Reclaiming PV
+// -  the only way to manually recycle the PV to make it available
+//    again is to delete and recreate the PV resource
+
+// Other reclaiming strategies
+// - Recycle: deletes the volume’s contents and makes the volume available to be claimed again
+// - Delete: deletes the underlying storage
+// - this options may or may not be supported
+// - you can change reclaim policy on existing PV (for ex. Delete -> Retain to prevent losing data)

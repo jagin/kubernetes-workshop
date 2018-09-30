@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubek-namespaced
+  namespace: kubek-ns
+spec:
+  containers:
+  - image: jagin/kubek
+    name: kubek
+    ports:
+    - containerPort: 8000

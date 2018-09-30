@@ -1,0 +1,55 @@
+StatefulSet
+Lab 18: Using a StatefulSet
+===========================
+
+// StatefulSet: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+
+// The Lab based on:
+// - https://blog.openshift.com/kubernetes-statefulset-in-action/
+// - https://github.com/mhausenblas/mehdb
+
+// Create a namespace
+$ kubectl create ns mehdb
+
+// mehdb setup assumes that a storage class ebs exists
+$ kubectl create -f ebs-storageclass.yaml
+
+// Creating the mehdb StatefulSet
+$ kubectl -n mehdb apply -f https://raw.githubusercontent.com/mhausenblas/mehdb/master/app.yaml
+
+// First, let’s verify that StatefulSet has created the leader (mehdb-0) 
+// and follower pod (mehdb-1) and that the persistent volumes are in place
+$ kubectl get all -n mehdb
+$ kubectl -n mehdb get sts,po,pvc -o wide
+
+// Check the headless service
+$ kubectl -n mehdb describe svc/mehdb
+
+$ kubectl -n mehdb run kubetools --image=jagin/kubetools --rm -it --restart=Never --command nslookup mehdb
+// - the headless service itself has no cluster IP and created two endpoints for the pods mehdb-0 and mehdb-1 respectively
+
+// Writing data to mehdb
+$ kubectl -n mehdb run kubetools --image=jagin/kubetools --rm -it --restart=Never --command bash
+# curl -L -X PUT -d "test data" mehdb:9876/set/test
+// - -L option in above curl command makes sure that if we happen to hit the 
+//   follower shard we get redirected to the leader shard and the write goes through
+
+// Reading data directly from the follower shard and the leader
+# curl mehdb-1.mehdb:9876/get/test
+# curl mehdb-0.mehdb:9876/get/test
+
+// Scaling up
+$ kubectl -n mehdb scale sts mehdb --replicas 4
+// - this can take several minutes until the readiness probes pass
+
+$ kubectl -n mehdb get sts
+
+// Let's simulate a failure, for example by deleting one of the pods
+$ kubectl -n mehdb get pods
+$ kubectl -n mehdb delete po/mehdb-1
+$ kubectl -n mehdb get pods
+// - StatefulSet detected that mehdb-1 is gone, created a replacement for it with a new IP address 
+// - we can still get the data from this shard via curl mehdb-1.mehdb:9876/get/test thanks to the persistent volume
+
+// Cleanup
+$ kubectl delete ns mehdb

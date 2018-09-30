@@ -1,0 +1,24 @@
+apiVersion: apps/v1beta2
+kind: ReplicaSet
+metadata:
+  name: kubek
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kubek
+  template:
+    metadata:
+      labels:
+        app: kubek
+    spec:
+      containers:
+      - name: kubek      
+        image: jagin/kubek
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health-check
+            port: 8000
+          initialDelaySeconds: 5

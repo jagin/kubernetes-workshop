@@ -1,0 +1,90 @@
+Application configuration
+Lab 15: ConfigMap
+=================
+
+// Configure a Pod to Use a ConfigMap: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+
+// Creating a ConfigMap
+$ kubectl create configmap -h
+$ kubectl create configmap fortune-config --from-literal=sleep-interval=25 --from-literal=fortune-length=50 
+// - keys may only contain alphanumeric characters, dashes, underscores and dots
+$ kubectl get configmap fortune-config -o yaml
+
+$ cat fortune-config.yaml
+$ kubectl create -f fortune-config.yaml
+
+// Passing a ConfigMap entry to a container as an environment variable and command-line argument
+$ cat fortune-kubek-pod-cm.yaml
+$ konfig create -f fortune-kubek-pod-cm.yaml
+$ kubectl port-forward fortune-kubek 8080:8000
+$ while true; do curl http://localhost:8080/fortune.txt; sleep 5; done
+
+// Referencing non-existing ConfigMaps in a pod
+// - Kubernetes schedules the pod normally and tries to run its containers.
+// - The container referencing the non-existing ConfigMap will fail to start, but the other
+//   container will start normally.
+// - If you then create the missing ConfigMap, the failed container is started without 
+//   requiring you to recreate the pod.
+// - You can allow to start the container even if the CM doesn't exists by setting
+//   configMapKeyRef.optional: true
+
+// Passing all entries of a ConfigMap as environment variables at once
+// spec:
+//   containers:
+//   - image: some-image
+//     envFrom:                
+//     - prefix: CONFIG_             
+//       configMapRef:              
+//         name: my-config-map
+
+// Using a configMap volume to expose ConfigMap entries as files
+$ kubectl create configmap kubek-config --from-file=configmaps/public
+$ kubectl get configmap kubek-config -o yaml
+$ kubectl create -f kubek-pod-cm-volume.yaml
+$ kubectl exec kubek ls /app/public
+$ kubectl port-forward kubek 8080:8000
+$ curl http://localhost:8080/lorem.txt
+$ curl http://localhost:8080/ipsum.txt
+
+// Exposing certain ConfigMap entries in the volume
+//   volumes:
+//   - name: config
+//     configMap:
+//       name: kubek-config
+//       items:
+//       - key: lorem.txt
+//         path: my-lorem.txt
+
+// Mountig a directory hides existing files in that directory.
+// Instead of mounting the whole volume, you can mount part of it using subPath.
+// Example:
+// spec:
+//   containers:
+//   - image: some/image
+//     volumeMounts:
+//     - name: myvolume
+//       mountPath: /etc/someconfig.conf     
+//       subPath: myconfig.conf
+
+// Setting the file permission for files in a ConfigMap volume (defaultMode)
+// - default is 644 (-rw-r-r--)
+// Example:
+// volumes:
+//   - name: config
+//     configMap:
+//       name: fortune-config
+//       defaultMode: "6600"
+
+// Updating an app’s config without having to restart the app
+// - Using a ConfigMap and exposing it through a volume allow to update the configuration
+//   without having to recreate the pod or even restart the container
+// - application can watch the changes and reconfigure
+// - If you’ve mounted a single file in the container instead of the whole volume, the file will not be updated
+
+// Editing a ConfigMap
+$ kubectl edit configmap kubek-config
+// - change the content of lorem.txt
+$ kubectl exec kubek cat /app/public/lorem.txt
+// - the update can take up to one minue right now
+
+// It is wrong to modify ConfigMap of the running containers especially if it's their configuration.

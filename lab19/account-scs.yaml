@@ -1,0 +1,60 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: account-scs
+  labels:
+    app: account-scs  
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: account-scs
+      labels:
+        app: account-scs
+    spec:
+      containers:
+      - image: jagin/account-scs
+        env:
+        - name: NODE_ENV        
+          value: development         
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: auth0-secret
+              key: auth0-client-secret
+        - name: AUTH0_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: auth0-secret
+              key: auth0-client-id
+        - name: AUTH0_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth0-secret
+              key: auth0-client-secret
+        - name: AUTH0_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: auth0-secret
+              key: auth0-domain
+        - name: AUTH0_COOKIE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: auth0-secret
+              key: auth0-cookie-password                
+        name: account-scs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: account-scs
+  labels:
+    app: account-scs  
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8000
+  selector:
+    app: account-scs
+

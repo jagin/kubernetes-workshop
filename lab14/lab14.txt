@@ -1,0 +1,40 @@
+Application configuration
+Lab 14: Configuraton through command-line arguments and environment variables
+=============================================================================
+
+// Lets' look again at the fortune from lab11
+// See: http://manpages.ubuntu.com/manpages/cosmic/man6/fortune.6.html
+$ cat ../lab11/fortune/fortuneloop.sh
+$ cat ../lab11/fortune/Dockerfile
+
+// Overriding the command and arguments in Kubernetes
+$ cat fortune-kubek-pod-args.yaml
+$ kubectl create -f fortune-kubek-pod-args.yaml
+// - wait till pod is running
+$ kubectl port-forward fortune-kubek 8080:8000
+$ while true; do curl http://localhost:8080/fortune.txt; sleep 10; done
+
+// Specifying the executable and its arguments in Docker vs Kubernetes
+// - ENTRYPOINT -> command
+// - CMD -> args
+
+$ kubectl delete pod fortune-kubek
+
+// Specifying environment variables in a container definition
+$ cat fortune-kubek-pod-env.yaml
+$ kubectl create -f fortune-kubek-pod-env.yaml
+$ kubectl port-forward fortune-kubek 8080:8000
+$ while true; do curl http://localhost:8080/fortune.txt; sleep 5; done
+// - the environment variable is set inside the container definition, not at the pod level.
+// - Kubernetes  also  automatically exposes environment variables for each service in the same namespace
+
+// Referring to other environment variables in a variable’s value
+// env:
+// - name: FIRST_VAR
+//   value: "foo"
+// - name: SECOND_VAR
+//   value: "$(FIRST_VAR)bar"
+
+// Having values effectively hardcoded in the pod definition means you need to have
+// separate pod definitions for your production and your development pods.
+// But there is a ConfigMap!

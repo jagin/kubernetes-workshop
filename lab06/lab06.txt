@@ -1,0 +1,71 @@
+ReplicationController
+Lab 6: Creating a ReplicationController
+=======================================
+
+// ReplicationController: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/
+
+// Creating a RC as a command
+$ kubectl run kubek --image={docker-repo}/kubek --port=8000  --replicas=2 --generator=run/v1
+$ kubectl get pods
+// Seeing the RC respond to a deleted pod
+$ kubectl delete po kubek-{pod-id}
+$ kubectl get pods
+
+// Remove RC
+$ kubectl delete rc kubek
+
+// Creating a ReplicationController from the descriptor
+$ cat kubek-rc.yaml
+// - the pod labels in the template must match the label selector of the ReplicationController
+// - you can ommit the selector at all. In that case, it will be configured automatically 
+//   from the labels in the pod template
+$ kubectl create -f kubek-rc.yaml
+
+// Getting information about created resources
+$ kubectl get pods --show-labels
+$ kubectl get rc --show-labels
+$ kubectl describe rc kubek
+$ kubectl get all
+
+// Moving pods in and out of the scope of a ReplicationController
+// - RC doesn’t care if you add additional labels to its managed pods
+$ kubectl label pod kubek-${pod-id} type=special
+$ kubectl get pods --show-labels
+
+// Changing the labels of a managed pod
+$ kubectl label pod kubek-${pod-id} app=foo --overwrite
+$ kubectl get pods -L app
+// - new pod is created by RC but this one is now unmanaged
+
+// Changing the pod template
+$ kubectl edit rc kubek
+// - add an additional label to the metadata and save the template
+// - list pods and their labels again and confirm that they haven’t changed
+// - delete the pods and wait for their replacements to be created, you’ll see the new label
+
+// Configuring kubectl edit to use a different text editor
+$ export KUBE_EDITOR="/usr/bin/nano"
+
+// Horizontally scaling pods
+// Scaling up
+$ kubectl scale rc kubek --replicas=10
+// or
+$ kubectl edit rc kubek
+// - change spec.replicas to 10
+// - when you save the file and close the editor, the RC is updated and it 
+//   immediately scales the number of pods to 10
+
+// Scaling down
+$ kubectl scale rc kubek --replicas=3
+// - horizontally scaling pods in Kubernetes is a matter of stating your desire
+// - it's a declarative approach
+
+// Deleting a ReplicationController
+// - when you delete a RC through kubectl delete, the pods are also deleted
+// - it is possible to delete  only  the RC and leave the pods running
+// - this may be useful when you initially have a set of pods managed by a RC,
+//   and then decide to replace the ReplicationController with a ReplicaSet
+// - you can always create a new RC with the proper label selector and make 
+//   them managed again
+$ kubectl delete rc kubek --cascade=false
+// - let's leave the pods unmanaged, we will switch them to a ReplicaSet

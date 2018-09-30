@@ -1,0 +1,22 @@
+Pods
+Lab 4: Liveness probe
+=====================
+
+// Configure Liveness and Readiness Probes: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+
+// Tworzenie sondy żywotności opartej na HTTP
+$ cat kubek-pod-liveness.yaml
+$ kubectl create -f kubek-pod-liveness.yaml
+
+// Check the health of the pod
+$ kubectl get po kubek-liveness
+$ kubectl logs kubek-liveness -f
+
+$ kubectl exec -it kubek-liveness bash
+# rm /var/healthy
+
+// When you want to figure out why the previous container terminated, you’ll want to
+// see those logs instead of the current container’s logs. This can be done by using
+// the --previous option
+$ kubectl logs kubek-liveness --previous
+$ kubectl describe po kubek-liveness

@@ -1,0 +1,27 @@
+ReplicaSet
+Lab 7: Creating a ReplicaSet
+============================
+
+// ReplicaSet: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+
+// Comparing a ReplicaSet to a ReplicationController
+// - another API version
+// - spec.selector.matchLabels
+$ diff ../lab06/kubek-rc.yaml kubek-rs.yaml
+
+// Creating and examining a ReplicaSet
+$ cat kubek-rs.yaml
+$ kubectl create -f kubek-rs.yaml
+$ kubectl describe replicaset
+// - they’re still the same three pods we had before.
+
+// Using the ReplicaSet’s more expressive label selectors
+// - spec.selector.matchExpressions
+$ cat kubek-rs-matchexpressions.yaml
+// - operators: In, NotIn, Exists, DoesNotExists
+// - if you specify multiple expressions, all those expressions must evaluate to true for the
+//   selector to match a pod
+
+// Wrapping up ReplicaSets
+$ kubectl delete rs kubek
+$ kubectl get pods

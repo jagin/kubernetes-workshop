@@ -1,0 +1,21 @@
+Volume
+Lab 11: emptyDir
+================
+
+// emptyDir: https://kubernetes.io/docs/concepts/storage/volumes/#emptydir
+
+// First we will build some content generator
+// See: http://manpages.ubuntu.com/manpages/cosmic/man6/fortune.6.html
+$ cd fortune
+$ cat fortuneloop.sh
+$ cat Dockerfile
+$ docker build -t jagin/fortune .
+$ docker push jagin/fortune
+
+$ cd ..
+
+$ cat fortune-kubek-pod.yaml
+$ kubectl create -f fortune-kubek-pod.yaml
+// - wait till pod is running
+$ kubectl port-forward fortune-kubek 8080:8000
+$ while true; do curl http://localhost:8080/fortune.txt; sleep 10; done

@@ -1,0 +1,43 @@
+Pods
+Lab 3: Labels and annotations
+=============================
+
+// Labels and Selectors: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+// Annotations: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+
+// Specifying labels when creating a pod
+$ cat kubek-pod-labeled.yaml
+$ kubectl create -f kubek-pod-labeled.yaml
+$ kubectl get po --show-labels
+$ kubectl get po -L creation_method,env
+
+// Modifying labels of existing pods
+$ kubectl label po kubek creation_method=manual
+$ kubectl label po kubek-labeled env=debug --overwrite
+$ kubectl get po -L creation_method,env
+
+// Listing subsets of pods through label selectors
+// - label selectors allow you to select a subset of pods tagged with certain 
+//   labels and perform an operation on those pods
+$ kubectl get po -l creation_method=manual
+$ kubectl get po -l env
+$ kubectl get po -l '!env'
+
+// Using multiple conditions in a label selector
+$ kubectl get po -l creation_method=manual,env=debug
+
+// Using labels and selectors to constrain pod scheduling
+$ kubectl get nodes --show-labels
+$ kubectl label node docker-for-desktop gpu=true
+$ kubectl get nodes -l gpu=true
+
+$ cat kubek-pod-gpu.yaml
+$ kubectl create -f kubek-pod-gpu.yaml
+
+// Możemy przypisać poda do konkretnego noda jeżeli jest taka potrzeba
+// używając etykiety kubernetes.io/hostname
+$ kubectl get nodes -L kubernetes.io/hostname
+
+// Adnotowanie podów
+$ kubectl annotate pod kubek mycompany.com/someannotation="foo bar"
+$ kubectl describe pod kubek

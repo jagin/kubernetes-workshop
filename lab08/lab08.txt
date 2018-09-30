@@ -1,0 +1,83 @@
+Service
+Lab 8: Discover and talk to pods
+================================
+
+// Services: https://kubernetes.io/docs/concepts/services-networking/
+
+// First we will need some extra tools
+$ cd kubetools
+$ docker build -t jagin/kubetools .
+$ docker push jagin/kubetools
+$ cd ..
+
+// Creating Cluster IP service
+// - let's first create ReplicationController with 3 pod replicas
+$ kubectl create -f ../lab06/kubek-rc.yaml
+// - expose RC through Cluster IP service (default type)
+$ cat kubek-svc.yaml
+$ kubectl create -f kubek-svc.yaml
+// $ kubectl expose rc kubek --port=8080 --target-port=8000 --name kubek
+$ kubectl get svc
+$ kubectl get svc kubek
+// - because this is the cluster IP service, it’s only accessible from inside the cluster.
+// - you can ssh into one of the Kubernetes nodes and use the curl command
+// - you can execute the curl command inside one of your existing pods through the kubectl exec command
+// - you can create a pod that will send the request to the service’s cluster IP and log the response
+
+// Create a pod that will send the request to the service’s cluster IP
+$ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --command -- curl -s http://{cluster-ip}:8080
+// or
+$ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --command -- bash
+# curl http://{cluster-ip}:8080
+// - notice different host names
+# exit
+// or
+$ kubectl run kubetools --image=jagin/kubetools --generator=run-pod/v1 --command -- sleep infinity
+$ kubectl exec kubetools curl http://{cluster-ip}:8080
+
+// Configure Session affinity on the service
+$ cat kubek-svc-session-affinity.yaml
+
+// Exposing multiple ports in the same service
+$ cat kubek-svc-multiple-ports.yaml
+// - The label selector applies to the whole service
+// - it can’t be configured for each port individually
+// - if you want different ports to map to different subsets of pods,
+//   you need to create two services
+
+// Using named ports
+// - first define port names in the pod
+$ cat kubek-pod-named-ports.yaml
+// - refer to those ports by name in the service spec
+$ cat kubek-svc-named-ports.yaml
+// - benefit of doing so is that it enables you to change port numbers later
+//   without having to change the service spec
+
+// Discovering services through environment variables
+$ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --command bash
+# env
+# env | grep KUBEK
+# curl http://$KUBEK_SERVICE_HOST:$KUBEK_SERVICE_PORT
+
+// Discovering services through DNS
+# nslookup kubek
+// - Kubernetes automatically configure pod by modifying each container’s /etc/resolv.conf file
+# cat /etc/resolv.conf
+# curl http://kubek.default.svc.cluster.local:8080
+# curl http://kubek.default:8080
+# curl http://kubek:8080
+// - each service gets a DNS entry in the internal DNS server, and client pods that know
+//   the name of the service can access it through its fully qualified domain name (FQDN)
+//   instead of resorting to environment variables.
+// - but the client must still know the service’s port number which can be 
+//   obtained from the environment variable
+// -  the service’s cluster IP is a virtual IP, and only has meaning when combined 
+//    with the service port. You cannot ping the service.
+
+// Service endpoints
+$ kubectl describe svc kubek
+$ kubectl get endpoints kubek
+// - when a client connects to a service, the service proxy selects one of those IP and port pairs and redirects the
+//   incoming connection to the server listening at that location.
+
+$ kubectl delete svc kubek

@@ -1,0 +1,50 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: scs
+  labels:
+    app: scs    
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: scs
+      labels:
+        app: scs
+    spec:
+      containers:
+      - image: jagin/scs
+        env:
+        - name: NGINX_HOST
+          value: "0.0.0.0"
+        - name: NGINX_PORT
+          value: "8000"
+        - name: NGINX_RESOLVER
+          value: "kube-dns.kube-system.svc.cluster.local ipv6=off valid=5s"          
+        - name: NGINX_HOME_SCS_HOST
+          value: home-scs.scs.svc.cluster.local
+        - name: NGINX_HOME_SCS_PORT
+          value: "8080"
+        - name: NGINX_ACCOUNT_SCS_HOST
+          value: account-scs.scs.svc.cluster.local
+        - name: NGINX_ACCOUNT_SCS_PORT
+          value: "8080" 
+        - name: NGINX_ITEMS_SCS_HOST
+          value: items-scs.scs.svc.cluster.local
+        - name: NGINX_ITEMS_SCS_PORT
+          value: "8080"                    
+        name: scs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scs
+  labels:
+    app: scs  
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: scs

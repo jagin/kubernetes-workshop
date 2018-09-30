@@ -1,0 +1,30 @@
+Pods
+Lab 5: Stopping and removing pods
+=================================
+
+// Deleting a pod by name
+$ kubectl delete po kubek-gpu
+// - you can also delete more than one pod by specifying multiple, space-sep-
+//   arated names (for example, kubectl delete po pod1 pod2)
+// - all the containers that are part of that pod are terminated
+// - Kubernetes sends a SIGTERM signal to the process and waits a certain
+//   number of seconds (30 by default) for it to shut down gracefully
+// - if it doesn’t shut down in time, the process is then killed through SIGKILL.
+// - to make sure your processes are always shut down gracefully,
+//   they need to handle the SIGTERM signal properly.
+
+// Deleting pods using label selectors
+$ kubectl get po -L creation_method
+$ kubectl delete po -l creation_method=manual
+
+// Deleting pods by deleting the whole namespace
+$ kubectl get pods -n kubek-ns
+$ kubectl delete ns kubek-ns
+
+// Deleting all pods in a namespace, while keeping the namespace
+$ kubectl get pods
+$ kubectl delete po --all
+
+// Deleting (almost) all resources in a namespace
+$ kubectl delete all --all
+// -  certain resources (like Secrets) are preserved and need to be deleted explicitly

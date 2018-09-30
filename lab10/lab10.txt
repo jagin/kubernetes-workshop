@@ -1,0 +1,32 @@
+Service
+Lab 10: Readiness probe
+=======================
+
+// Configure Liveness and Readiness Probes: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+
+// Add the readiness probe to the current RC descriptor
+$ cat kubek-rc.yaml
+$ kubectl replace -f kubek-rc.yaml
+// - this time we use replace command to update RC kubek resource
+
+// or
+// $ kubectl edit rc kubia
+
+// Check existing pods and endpoints
+$ kubectl get po
+// - existing pods are ready because they are running based on the old template
+// - we need to remove them to have created the new one
+$ kubectl delete po --all
+$ kubectl get po
+$ kubectl get endpoints kubek
+// - there is no pod IP's in the ENDPOINTS column
+$ kubectl exec kubek-${pod-id} -- touch /var/ready
+// - it will take about 10 seconds to have the pod ready
+//   (that's the default period time to run readiness probe)
+$ kubectl get endpoints kubia
+// - notice ENDPOINTS
+$ curl http://localhost:${svc-node-port}
+// - curl hit the ready pod all the time
+
+// Set other pods as ready
+// Try to remove /var/ready file from one of the pods

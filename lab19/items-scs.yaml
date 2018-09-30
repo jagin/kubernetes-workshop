@@ -1,0 +1,44 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: items-scs
+  labels:
+    app: items-scs  
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: items-scs
+      labels:
+        app: items-scs
+    spec:
+      containers:
+      - image: jagin/items-scs
+        env:
+        - name: NODE_ENV        
+          value: development         
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: auth0-secret
+              key: auth0-client-secret
+        - name: DATABASE_URL
+          value: mongodb://mongodb:27017
+        - name: DATABASE_NAME
+          value: items-db
+        name: items-scs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: items-scs
+  labels:
+    app: items-scs    
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8000
+  selector:
+    app: items-scs
+
