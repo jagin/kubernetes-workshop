@@ -20,6 +20,8 @@ $ kubectl exec -it mongodb mongo
 > db.foo.find()
 > exit
 
+$ kubectl delete po mongodb --wait=false
+
 ------------------------------------------------------
 
 // Persistent storage

@@ -6,8 +6,8 @@ Lab 8: Discover and talk to pods
 
 // First we will need some extra tools
 $ cd kubetools
-$ docker build -t jagin/kubetools .
-$ docker push jagin/kubetools
+$ docker build -t {docker-repo}/kubetools .
+$ docker push {docker-repo}/kubetools
 $ cd ..
 
 // Creating Cluster IP service
@@ -25,14 +25,14 @@ $ kubectl get svc kubek
 // - you can create a pod that will send the request to the service’s cluster IP and log the response
 
 // Create a pod that will send the request to the service’s cluster IP
-$ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --command -- curl -s http://{cluster-ip}:8080
+$ kubectl run kubetools --image={docker-repo}/kubetools --rm -it --restart=Never --command -- curl -s http://{cluster-ip}:8080
 // or
-$ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --command -- bash
+$ kubectl run kubetools --image={docker-repo}/kubetools --rm -it --restart=Never --command -- bash
 # curl http://{cluster-ip}:8080
 // - notice different host names
 # exit
 // or
-$ kubectl run kubetools --image=jagin/kubetools --generator=run-pod/v1 --command -- sleep infinity
+$ kubectl run kubetools --image={docker-repo}/kubetools --generator=run-pod/v1 --command -- sleep infinity
 $ kubectl exec kubetools curl http://{cluster-ip}:8080
 
 // Configure Session affinity on the service
@@ -54,7 +54,7 @@ $ cat kubek-svc-named-ports.yaml
 //   without having to change the service spec
 
 // Discovering services through environment variables
-$ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --command bash
+$ kubectl run kubetools --image={docker-repo}/kubetools --rm -it --restart=Never --command bash
 # env
 # env | grep KUBEK
 # curl http://$KUBEK_SERVICE_HOST:$KUBEK_SERVICE_PORT
@@ -71,8 +71,9 @@ $ kubectl run kubetools --image=jagin/kubetools --rm -it --restart=Never --comma
 //   instead of resorting to environment variables.
 // - but the client must still know the service’s port number which can be 
 //   obtained from the environment variable
-// -  the service’s cluster IP is a virtual IP, and only has meaning when combined 
-//    with the service port. You cannot ping the service.
+// - the service’s cluster IP is a virtual IP, and only has meaning when combined 
+//   with the service port. You cannot ping the service.
+# exit
 
 // Service endpoints
 $ kubectl describe svc kubek

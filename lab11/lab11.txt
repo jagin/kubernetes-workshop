@@ -9,8 +9,8 @@ Lab 11: emptyDir
 $ cd fortune
 $ cat fortuneloop.sh
 $ cat Dockerfile
-$ docker build -t jagin/fortune .
-$ docker push jagin/fortune
+$ docker build -t {docker-repo}/fortune .
+$ docker push {docker-repo}/fortune
 
 $ cd ..
 

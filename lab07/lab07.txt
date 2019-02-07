@@ -21,6 +21,7 @@ $ cat kubek-rs-matchexpressions.yaml
 // - operators: In, NotIn, Exists, DoesNotExists
 // - if you specify multiple expressions, all those expressions must evaluate to true for the
 //   selector to match a pod
+// See: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#resources-that-support-set-based-requirements
 
 // Wrapping up ReplicaSets
 $ kubectl delete rs kubek

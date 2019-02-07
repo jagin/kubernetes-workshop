@@ -22,10 +22,13 @@ $ kubectl get nodes
 
 // Dashboard (local)
 // https://github.com/kubernetes/dashboard
-$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
 $ kubectl proxy
 // http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
-// Click 'Skip' at login prompt
+// Click 'Skip' at login prompt - no longer works but we can use kubernetes-dashboard-token
+$ kubectl -n kube-system get secret | grep dashboard-token
+$ kubectl -n kube-system describe secrets kubernetes-dashboard-token-{hash}
+// Use the token to login
 
 // Building Kubek application
 cd kubek
@@ -53,7 +56,7 @@ $ docker exec -it kubek bash
 // Attaching to the current process
 $ docker attach kubek
 // - to exit the terminal Ctrl+p + Ctrl+q
-// On MacOs it is not working then
+// On MacOs it is not working! Use:
 $ docker attach --sig-proxy=false kubek
 // - and Ctrl+c will exit the terminal
 

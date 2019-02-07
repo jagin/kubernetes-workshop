@@ -28,14 +28,13 @@ $ kubectl get po -l creation_method=manual,env=debug
 
 // Using labels and selectors to constrain pod scheduling
 $ kubectl get nodes --show-labels
-$ kubectl label node docker-for-desktop gpu=true
+$ kubectl label node docker-desktop gpu=true
 $ kubectl get nodes -l gpu=true
 
 $ cat kubek-pod-gpu.yaml
 $ kubectl create -f kubek-pod-gpu.yaml
 
-// Możemy przypisać poda do konkretnego noda jeżeli jest taka potrzeba
-// używając etykiety kubernetes.io/hostname
+// We can assign pod to the selected node using kubernetes.io/hostname label
 $ kubectl get nodes -L kubernetes.io/hostname
 
 // Adnotowanie podów

@@ -4,7 +4,7 @@ Lab 4: Liveness probe
 
 // Configure Liveness and Readiness Probes: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
 
-// Tworzenie sondy żywotności opartej na HTTP
+// Creating liveness probe based on HTTP
 $ cat kubek-pod-liveness.yaml
 $ kubectl create -f kubek-pod-liveness.yaml
 
